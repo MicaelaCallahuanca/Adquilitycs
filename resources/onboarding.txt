@@ -1,0 +1,7 @@
+- propuesta + plan de acción: definir que se va a hacer en qué semana, una proyección
+- scope of work (alcances del proyecto): quién va a hacer qué, en dónde termina las responsabilidades de nosotros y empieza las responsabilidades del cliente, qué necesitamos de cada lado para avanzar
+- portal del cliente: plataforma de proyecto management para visibilizar total del proyecto, lo que se hace, acceso a tareas
+- llamada de kick off: explicamos todo el proceso y solicitamos accesos
+- brief de comunicación: para ver cómo quieren que suene la empresa
+- lista de actividades
+- reporte mensual de crecimiento

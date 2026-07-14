@@ -1,0 +1,45 @@
+﻿01. Auditoría de Crecimiento
+Problema
+"No sabemos dónde estamos perdiendo oportunidades."
+Qué hacemos
+Analizamos:
+* Adquisición
+* Tracking
+* Analytics
+* Embudo
+* Landing Pages
+* Conversiones
+Resultado
+Identificamos:
+* fugas de crecimiento
+* oportunidades de mejora
+* prioridades
+Entregable
+Mapa de oportunidades priorizado.
+________________
+
+
+Fórmula Adquilytics
+Cada hallazgo debería tener:
+Problema
+No existe medición de formularios.
+________________
+
+
+Consecuencia
+No se puede calcular el coste por lead.
+________________
+
+
+Solución
+Implementar eventos y conversiones en GA4 y GTM.
+________________
+
+
+Impacto estimado
+Alto.
+________________
+
+
+Prioridad
+1
