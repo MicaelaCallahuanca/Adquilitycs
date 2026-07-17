@@ -12,3 +12,29 @@ export async function getClientesEnRiesgoCount(
   if (error) throw error;
   return count ?? 0;
 }
+
+// Vista Directorio de Clientes (sección 6): nombre, tipo, estado,
+// % capacidad, rentabilidad, riesgo.
+export async function getClientesDirectorio(
+  supabase: SupabaseClient<Database>,
+) {
+  const { data, error } = await supabase
+    .from("v_clientes_metricas")
+    .select("*")
+    .order("nombre", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getClientesParaSelect(
+  supabase: SupabaseClient<Database>,
+) {
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("id, nombre")
+    .order("nombre", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}

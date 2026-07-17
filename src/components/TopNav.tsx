@@ -4,6 +4,8 @@ import { signOut } from "@/app/actions";
 const LINKS = [
   { href: "/", label: "🏠 Home" },
   { href: "/hoy", label: "📅 Hoy" },
+  { href: "/semana", label: "🗂️ Semana" },
+  { href: "/clientes", label: "👥 Clientes" },
 ];
 
 export function TopNav() {
@@ -21,14 +23,22 @@ export function TopNav() {
             </Link>
           ))}
         </nav>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="text-xs text-muted hover:text-foreground transition-colors"
+        <div className="flex items-center gap-4">
+          <Link
+            href="/tareas/nueva"
+            className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 transition-opacity"
           >
-            Cerrar sesión
-          </button>
-        </form>
+            + Nueva tarea
+          </Link>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="text-xs text-muted hover:text-foreground transition-colors"
+            >
+              Cerrar sesión
+            </button>
+          </form>
+        </div>
       </div>
     </header>
   );

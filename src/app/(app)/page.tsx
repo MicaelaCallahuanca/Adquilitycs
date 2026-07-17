@@ -97,9 +97,17 @@ export default async function HomePage() {
 
       {/* Franja inferior — Semana (Kanban compacto) */}
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-          Semana
-        </h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+            Semana
+          </h2>
+          <Link
+            href="/semana"
+            className="text-xs font-medium text-accent hover:opacity-80"
+          >
+            Ver Vista Semana completa →
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {kanban.map((columna) => (
             <div key={columna.estado} className="min-w-0">

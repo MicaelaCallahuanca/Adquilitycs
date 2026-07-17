@@ -1,4 +1,5 @@
 import type { TareaConCliente } from "@/lib/data/tareas";
+import { EstadoSelect } from "@/components/EstadoSelect";
 
 function formatDeadline(deadline: string | null) {
   if (!deadline) return null;
@@ -56,6 +57,7 @@ export function TaskRow({ tarea }: { tarea: TareaConCliente }) {
             {formatDeadline(tarea.deadline_interno)}
           </span>
         )}
+        <EstadoSelect tareaId={tarea.id} estado={tarea.estado} />
       </div>
     </div>
   );

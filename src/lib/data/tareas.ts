@@ -65,20 +65,34 @@ const KANBAN_ESTADOS = [
   "Hecho",
 ] as const;
 
-export async function getTareasSemanaKanban(supabase: SupabaseClient<Database>) {
+async function getTareasKanban(
+  supabase: SupabaseClient<Database>,
+  estados: readonly (typeof KANBAN_ESTADOS)[number][],
+) {
   const { data, error } = await supabase
     .from("tareas")
     .select(TAREA_CON_CLIENTE_SELECT)
-    .neq("estado", "Backlog")
+    .in("estado", estados)
     .order("prioridad_score", { ascending: false, nullsFirst: false });
 
   if (error) throw error;
   const tareas = (data ?? []) as unknown as TareaConCliente[];
 
-  return KANBAN_ESTADOS.filter((estado) => estado !== "Backlog").map(
-    (estado) => ({
-      estado,
-      tareas: tareas.filter((t) => t.estado === estado),
-    }),
+  return estados.map((estado) => ({
+    estado,
+    tareas: tareas.filter((t) => t.estado === estado),
+  }));
+}
+
+// Kanban compacto de Home (franja "Semana"): trabajo activo, sin Backlog.
+export function getTareasSemanaKanban(supabase: SupabaseClient<Database>) {
+  return getTareasKanban(
+    supabase,
+    KANBAN_ESTADOS.filter((estado) => estado !== "Backlog"),
   );
+}
+
+// Vista Semana (sección 6): las 7 columnas completas, incluyendo Backlog.
+export function getTareasKanbanCompleto(supabase: SupabaseClient<Database>) {
+  return getTareasKanban(supabase, KANBAN_ESTADOS);
 }
