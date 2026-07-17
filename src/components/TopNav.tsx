@@ -6,6 +6,7 @@ const LINKS = [
   { href: "/hoy", label: "📅 Hoy" },
   { href: "/semana", label: "🗂️ Semana" },
   { href: "/clientes", label: "👥 Clientes" },
+  { href: "/sops", label: "📚 SOPs" },
 ];
 
 export function TopNav() {

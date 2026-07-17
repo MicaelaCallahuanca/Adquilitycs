@@ -1,10 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { getTareasKanbanCompleto } from "@/lib/data/tareas";
+import { getOrCrearSemanaActual } from "@/lib/data/semanas";
 import { EstadoSelect } from "@/components/EstadoSelect";
+import { CapacityBar } from "@/components/CapacityBar";
+import { marcarRevisionViernes } from "@/app/actions";
 
 export default async function VistaSemanaPage() {
   const supabase = await createClient();
-  const kanban = await getTareasKanbanCompleto(supabase);
+  const [kanban, semana] = await Promise.all([
+    getTareasKanbanCompleto(supabase),
+    getOrCrearSemanaActual(supabase),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -13,9 +19,54 @@ export default async function VistaSemanaPage() {
           Vista Semana
         </h1>
         <p className="text-sm text-muted">
-          Backlog → Esta semana → Hoy → En progreso → Esperando cliente → En
-          revisión → Hecho.
+          {semana?.semana_inicio} → {semana?.semana_fin} · Backlog → Esta
+          semana → Hoy → En progreso → Esperando cliente → En revisión →
+          Hecho.
         </p>
+      </div>
+
+      <div className="rounded-lg border border-border bg-surface px-4 py-3">
+        <CapacityBar
+          pct={semana?.pct_capacidad_usada ?? null}
+          asignadaH={semana?.capacidad_asignada_h ?? null}
+          disponibleH={semana?.capacidad_disponible_h ?? null}
+        />
+
+        {semana?.revision_viernes_hecha ? (
+          <p className="mt-3 text-xs text-success">
+            ✓ Revisión de viernes hecha
+            {semana.notas_revision ? ` — ${semana.notas_revision}` : ""}
+          </p>
+        ) : (
+          semana?.id && (
+            <form
+              action={marcarRevisionViernes}
+              className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end"
+            >
+              <input type="hidden" name="semana_id" value={semana.id} />
+              <div className="flex-1">
+                <label
+                  htmlFor="notas_revision"
+                  className="mb-1 block text-xs text-muted"
+                >
+                  Revisión de viernes — qué se aprendió, qué se movió
+                </label>
+                <input
+                  id="notas_revision"
+                  name="notas_revision"
+                  type="text"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+                />
+              </div>
+              <button
+                type="submit"
+                className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+              >
+                Marcar hecha
+              </button>
+            </form>
+          )
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">

@@ -7,9 +7,10 @@ import {
   getTareasSemanaKanban,
 } from "@/lib/data/tareas";
 import { getClientesEnRiesgoCount } from "@/lib/data/clientes";
-import { getSemanaActual } from "@/lib/data/semanas";
+import { getOrCrearSemanaActual } from "@/lib/data/semanas";
 import { TaskRow } from "@/components/TaskRow";
 import { StatTile } from "@/components/StatTile";
+import { CapacityBar } from "@/components/CapacityBar";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -20,7 +21,7 @@ export default async function HomePage() {
       getTareasVenciendo48h(supabase),
       getTareasEsperandoClienteLargo(supabase),
       getClientesEnRiesgoCount(supabase),
-      getSemanaActual(supabase),
+      getOrCrearSemanaActual(supabase),
       getTareasSemanaKanban(supabase),
     ]);
 
@@ -107,6 +108,13 @@ export default async function HomePage() {
           >
             Ver Vista Semana completa →
           </Link>
+        </div>
+        <div className="mb-4 rounded-lg border border-border bg-surface px-4 py-3">
+          <CapacityBar
+            pct={pctCapacidad}
+            asignadaH={semana?.capacidad_asignada_h ?? null}
+            disponibleH={semana?.capacidad_disponible_h ?? null}
+          />
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {kanban.map((columna) => (

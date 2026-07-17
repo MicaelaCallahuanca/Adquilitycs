@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getClientesParaSelect } from "@/lib/data/clientes";
+import { getSopsParaSelect } from "@/lib/data/sops";
 import { createTarea } from "@/app/actions";
 import { EsfuerzoField } from "@/components/EsfuerzoField";
 
@@ -14,7 +15,10 @@ export default async function NuevaTareaPage({
 }) {
   const { error } = await searchParams;
   const supabase = await createClient();
-  const clientes = await getClientesParaSelect(supabase);
+  const [clientes, sops] = await Promise.all([
+    getClientesParaSelect(supabase),
+    getSopsParaSelect(supabase),
+  ]);
 
   return (
     <div className="mx-auto max-w-xl">
@@ -133,6 +137,24 @@ export default async function NuevaTareaPage({
               ))}
             </select>
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="sop_id" className="mb-1 block text-xs text-muted">
+            SOP vinculado
+          </label>
+          <select
+            id="sop_id"
+            name="sop_id"
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+          >
+            <option value="">Ninguno</option>
+            {sops.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.nombre}
+              </option>
+            ))}
+          </select>
         </div>
 
         <EsfuerzoField />
