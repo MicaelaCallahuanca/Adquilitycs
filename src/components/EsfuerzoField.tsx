@@ -10,9 +10,19 @@ const OPCIONES: { label: string; horas: number | null }[] = [
   { label: "Personalizado", horas: null },
 ];
 
-export function EsfuerzoField() {
-  const [seleccion, setSeleccion] = useState(OPCIONES[1]);
-  const [horas, setHoras] = useState<number | "">(1);
+export function EsfuerzoField({
+  defaultEsfuerzo,
+  defaultHoras,
+}: {
+  defaultEsfuerzo?: string | null;
+  defaultHoras?: number | null;
+}) {
+  const seleccionInicial =
+    OPCIONES.find((o) => o.label === defaultEsfuerzo) ?? OPCIONES[1];
+  const [seleccion, setSeleccion] = useState(seleccionInicial);
+  const [horas, setHoras] = useState<number | "">(
+    defaultHoras ?? seleccionInicial.horas ?? 1,
+  );
 
   return (
     <div className="grid grid-cols-2 gap-3">

@@ -38,3 +38,17 @@ export async function getClientesParaSelect(
   if (error) throw error;
   return data ?? [];
 }
+
+export async function getClienteById(
+  supabase: SupabaseClient<Database>,
+  id: string,
+) {
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}

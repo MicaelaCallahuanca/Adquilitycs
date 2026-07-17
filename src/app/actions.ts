@@ -49,12 +49,8 @@ function optionalNumber(formData: FormData, key: string) {
   return value.length > 0 ? Number(value) : null;
 }
 
-// Toda tarea nueva entra a Backlog (sección 8: nunca directo a "Hoy",
-// para forzar que compita con lo ya priorizado en vez de saltar la fila).
-export async function createTarea(formData: FormData) {
-  const supabase = await createClient();
-
-  const { error } = await supabase.from("tareas").insert({
+function tareaFieldsFromForm(formData: FormData) {
+  return {
     nombre: String(formData.get("nombre") ?? ""),
     cliente_id: optionalString(formData, "cliente_id"),
     categoria: optionalString(
@@ -75,12 +71,47 @@ export async function createTarea(formData: FormData) {
     deadline_real: optionalString(formData, "deadline_real"),
     notas: optionalString(formData, "notas"),
     sop_id: optionalString(formData, "sop_id"),
-    estado: "Backlog",
-  });
+  };
+}
+
+// Toda tarea nueva entra a Backlog (sección 8: nunca directo a "Hoy",
+// para forzar que compita con lo ya priorizado en vez de saltar la fila).
+export async function createTarea(formData: FormData) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("tareas")
+    .insert({ ...tareaFieldsFromForm(formData), estado: "Backlog" });
 
   if (error) {
     redirect(`/tareas/nueva?error=${encodeURIComponent(error.message)}`);
   }
+
+  revalidatePath("/", "layout");
+  redirect("/hoy");
+}
+
+export async function updateTarea(id: string, formData: FormData) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("tareas")
+    .update(tareaFieldsFromForm(formData))
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/tareas/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/hoy");
+}
+
+export async function deleteTarea(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("tareas").delete().eq("id", id);
+
+  if (error) throw error;
 
   revalidatePath("/", "layout");
   redirect("/hoy");
@@ -131,15 +162,13 @@ export async function marcarRevisionViernes(formData: FormData) {
   redirect("/semana");
 }
 
-export async function createCliente(formData: FormData) {
-  const supabase = await createClient();
-
+function clienteFieldsFromForm(formData: FormData) {
   const servicios = formData
     .getAll("servicios_activos")
     .map(String)
     .filter(Boolean);
 
-  const { error } = await supabase.from("clientes").insert({
+  return {
     nombre: String(formData.get("nombre") ?? ""),
     tipo: optionalString(
       formData,
@@ -160,11 +189,43 @@ export async function createCliente(formData: FormData) {
         formData,
         "nivel_riesgo",
       ) as Database["public"]["Enums"]["nivel_riesgo"] | null) ?? "Bajo",
-  });
+  };
+}
+
+export async function createCliente(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clientes")
+    .insert(clienteFieldsFromForm(formData));
 
   if (error) {
     redirect(`/clientes/nuevo?error=${encodeURIComponent(error.message)}`);
   }
+
+  revalidatePath("/", "layout");
+  redirect("/clientes");
+}
+
+export async function updateCliente(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clientes")
+    .update(clienteFieldsFromForm(formData))
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/clientes/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/clientes");
+}
+
+export async function deleteCliente(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("clientes").delete().eq("id", id);
+
+  if (error) throw error;
 
   revalidatePath("/", "layout");
   redirect("/clientes");

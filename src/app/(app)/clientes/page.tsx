@@ -44,9 +44,12 @@ export default async function ClientesPage() {
             className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3"
           >
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">
+              <Link
+                href={`/clientes/${c.id}`}
+                className="block truncate text-sm font-medium text-foreground hover:text-accent"
+              >
                 {c.nombre}
-              </p>
+              </Link>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
                 {c.tipo && <span>{c.tipo}</span>}
                 <span aria-hidden>·</span>

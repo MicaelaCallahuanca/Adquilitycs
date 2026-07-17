@@ -8,6 +8,20 @@ export type TareaConCliente =
 
 const TAREA_CON_CLIENTE_SELECT = "*, clientes ( nombre )";
 
+export async function getTareaById(
+  supabase: SupabaseClient<Database>,
+  id: string,
+) {
+  const { data, error } = await supabase
+    .from("tareas")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 // Vista Hoy (sección 6): estado activo hoy, o con deadline interno vencido hoy.
 export async function getTareasHoy(supabase: SupabaseClient<Database>) {
   const hoy = new Date().toISOString().slice(0, 10);

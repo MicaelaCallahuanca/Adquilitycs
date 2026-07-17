@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { TareaConCliente } from "@/lib/data/tareas";
 import { EstadoSelect } from "@/components/EstadoSelect";
 
@@ -15,9 +16,12 @@ export function TaskRow({ tarea }: { tarea: TareaConCliente }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 hover:bg-surface-hover transition-colors">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">
+        <Link
+          href={`/tareas/${tarea.id}`}
+          className="block truncate text-sm font-medium text-foreground hover:text-accent"
+        >
           {tarea.nombre}
-        </p>
+        </Link>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
           {tarea.clientes?.nombre && <span>{tarea.clientes.nombre}</span>}
           {tarea.subtipo && (
