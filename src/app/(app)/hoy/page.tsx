@@ -8,7 +8,7 @@ export default async function VistaHoyPage() {
 
   const grupos = new Map<string, typeof tareas>();
   for (const tarea of tareas) {
-    const clienteNombre = tarea.clientes?.nombre ?? "Interno";
+    const clienteNombre = tarea.negocios?.nombre ?? "Interno";
     const grupo = grupos.get(clienteNombre) ?? [];
     grupo.push(tarea);
     grupos.set(clienteNombre, grupo);

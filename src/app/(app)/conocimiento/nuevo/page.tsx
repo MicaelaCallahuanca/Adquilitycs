@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getClientesParaSelect } from "@/lib/data/clientes";
+import { getNegociosParaSelect } from "@/lib/data/negocios";
 import { createConocimiento } from "@/app/actions";
 
 const TIPOS = ["Técnico", "Cliente", "Estratégico"];
@@ -12,7 +12,7 @@ export default async function NuevoConocimientoPage({
 }) {
   const { error } = await searchParams;
   const supabase = await createClient();
-  const clientes = await getClientesParaSelect(supabase);
+  const clientes = await getNegociosParaSelect(supabase);
 
   return (
     <div className="mx-auto max-w-xl">

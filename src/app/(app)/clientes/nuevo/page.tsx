@@ -1,9 +1,12 @@
-import { createCliente } from "@/app/actions";
+import { createClient } from "@/lib/supabase/server";
+import { createNegocio } from "@/app/actions";
+import { getContactosParaSelect } from "@/lib/data/contactos";
+import { ContactosEditor } from "@/components/ContactosEditor";
+import { ServiciosEditor } from "@/components/ServiciosEditor";
 
 const TIPOS = ["Empresa fija", "Freelance", "Nuevo"];
 const ESTADOS = ["Activo", "Onboarding", "En pausa", "Cerrado"];
 const RIESGOS = ["Bajo", "Medio", "Alto"];
-const SERVICIOS = ["SEO", "Ads", "Tracking", "CRO", "Automatizaciones", "IA"];
 
 export default async function NuevoClientePage({
   searchParams,
@@ -11,12 +14,14 @@ export default async function NuevoClientePage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
+  const supabase = await createClient();
+  const contactosExistentes = await getContactosParaSelect(supabase);
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="text-lg font-semibold text-foreground">Nuevo cliente</h1>
+      <h1 className="text-lg font-semibold text-foreground">Nuevo negocio</h1>
 
-      <form action={createCliente} className="mt-6 flex flex-col gap-4">
+      <form action={createNegocio} className="mt-6 flex flex-col gap-4">
         <div>
           <label htmlFor="nombre" className="mb-1 block text-xs text-muted">
             Nombre
@@ -68,73 +73,18 @@ export default async function NuevoClientePage({
           </div>
         </div>
 
-        <div>
-          <p className="mb-1 block text-xs text-muted">Servicios activos</p>
-          <div className="flex flex-wrap gap-3">
-            {SERVICIOS.map((s) => (
-              <label
-                key={s}
-                className="flex items-center gap-1.5 text-sm text-foreground"
-              >
-                <input
-                  type="checkbox"
-                  name="servicios_activos"
-                  value={s}
-                  className="accent-accent"
-                />
-                {s}
-              </label>
-            ))}
-          </div>
-        </div>
-
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label
-              htmlFor="horas_contratadas_mes"
+              htmlFor="fecha_inicio"
               className="mb-1 block text-xs text-muted"
             >
-              Horas contratadas/mes
+              Fecha de inicio de la relación
             </label>
             <input
-              id="horas_contratadas_mes"
-              name="horas_contratadas_mes"
-              type="number"
-              min="0"
-              step="0.5"
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="fee_mensual"
-              className="mb-1 block text-xs text-muted"
-            >
-              Fee mensual
-            </label>
-            <input
-              id="fee_mensual"
-              name="fee_mensual"
-              type="number"
-              min="0"
-              step="0.01"
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label
-              htmlFor="contacto_principal"
-              className="mb-1 block text-xs text-muted"
-            >
-              Contacto principal
-            </label>
-            <input
-              id="contacto_principal"
-              name="contacto_principal"
-              type="text"
+              id="fecha_inicio"
+              name="fecha_inicio"
+              type="date"
               className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
             />
           </div>
@@ -160,13 +110,32 @@ export default async function NuevoClientePage({
           </div>
         </div>
 
+        <div>
+          <label
+            htmlFor="proxima_fecha_clave"
+            className="mb-1 block text-xs text-muted"
+          >
+            Próxima fecha clave
+          </label>
+          <input
+            id="proxima_fecha_clave"
+            name="proxima_fecha_clave"
+            type="date"
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+          />
+        </div>
+
+        <ContactosEditor existentes={contactosExistentes} />
+
+        <ServiciosEditor />
+
         {error && <p className="text-xs text-danger">{error}</p>}
 
         <button
           type="submit"
           className="mt-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
         >
-          Crear cliente
+          Crear negocio
         </button>
       </form>
     </div>

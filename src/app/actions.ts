@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getOrCrearSemanaActual } from "@/lib/data/semanas";
 import type { Database } from "@/lib/supabase/database.types";
@@ -181,12 +182,7 @@ export async function marcarRevisionViernes(formData: FormData) {
   redirect("/semana");
 }
 
-function clienteFieldsFromForm(formData: FormData) {
-  const servicios = formData
-    .getAll("servicios_activos")
-    .map(String)
-    .filter(Boolean);
-
+function negocioFieldsFromForm(formData: FormData) {
   return {
     nombre: String(formData.get("nombre") ?? ""),
     tipo: optionalString(
@@ -199,10 +195,8 @@ function clienteFieldsFromForm(formData: FormData) {
         "estado",
       ) as Database["public"]["Enums"]["cliente_estado"] | null) ??
       "Onboarding",
-    servicios_activos: servicios,
-    horas_contratadas_mes: optionalNumber(formData, "horas_contratadas_mes"),
-    fee_mensual: optionalNumber(formData, "fee_mensual"),
-    contacto_principal: optionalString(formData, "contacto_principal"),
+    fecha_inicio: optionalString(formData, "fecha_inicio"),
+    proxima_fecha_clave: optionalString(formData, "proxima_fecha_clave"),
     nivel_riesgo:
       (optionalString(
         formData,
@@ -211,38 +205,131 @@ function clienteFieldsFromForm(formData: FormData) {
   };
 }
 
-export async function createCliente(formData: FormData) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("clientes")
-    .insert(clienteFieldsFromForm(formData));
+// Reemplaza por completo los contactos y servicios asociados a un negocio
+// a partir de las filas dinámicas cargadas en el formulario (ContactosEditor
+// / ServiciosEditor). Los contactos elegidos como "existentes" se linkean
+// por id; el resto se crea como contacto nuevo antes de linkear.
+async function sincronizarContactosYServicios(
+  supabase: SupabaseClient<Database>,
+  negocioId: string,
+  formData: FormData,
+) {
+  const contactoExistente = formData.getAll("contacto_existente").map(String);
+  const contactoNombre = formData.getAll("contacto_nombre").map(String);
+  const contactoEmail = formData.getAll("contacto_email").map(String);
+  const contactoTelefono = formData.getAll("contacto_telefono").map(String);
+  const contactoRol = formData.getAll("contacto_rol").map(String);
+  const principalIndex = Number(formData.get("principal_index") ?? "0");
 
-  if (error) {
-    redirect(`/clientes/nuevo?error=${encodeURIComponent(error.message)}`);
+  const filasContacto = contactoNombre
+    .map((_, i) => ({
+      contactoId: contactoExistente[i]?.trim() || null,
+      nombre: contactoNombre[i]?.trim() || "",
+      email: contactoEmail[i]?.trim() || null,
+      telefono: contactoTelefono[i]?.trim() || null,
+      rol: contactoRol[i]?.trim() || null,
+      esPrincipal: i === principalIndex,
+    }))
+    .filter((fila) => fila.contactoId || fila.nombre);
+
+  const servicioNombre = formData.getAll("servicio_nombre").map(String);
+  const servicioFecha = formData.getAll("servicio_fecha_inicio").map(String);
+  const servicioFee = formData.getAll("servicio_fee_mensual").map(String);
+  const servicioHoras = formData
+    .getAll("servicio_horas_contratadas_mes")
+    .map(String);
+
+  const filasServicio = servicioNombre
+    .map((_, i) => ({
+      servicio: servicioNombre[i]?.trim() || "",
+      fecha_inicio: servicioFecha[i]?.trim() || null,
+      fee_mensual: servicioFee[i]?.trim() ? Number(servicioFee[i]) : null,
+      horas_contratadas_mes: servicioHoras[i]?.trim()
+        ? Number(servicioHoras[i])
+        : null,
+    }))
+    .filter((fila) => fila.servicio);
+
+  await supabase.from("negocio_contactos").delete().eq("negocio_id", negocioId);
+  await supabase.from("negocio_servicios").delete().eq("negocio_id", negocioId);
+
+  for (const fila of filasContacto) {
+    let contactoId = fila.contactoId;
+
+    if (!contactoId) {
+      const { data: nuevoContacto, error } = await supabase
+        .from("contactos")
+        .insert({
+          nombre: fila.nombre,
+          email: fila.email,
+          telefono: fila.telefono,
+          rol: fila.rol,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+      contactoId = nuevoContacto.id;
+    }
+
+    const { error } = await supabase.from("negocio_contactos").insert({
+      negocio_id: negocioId,
+      contacto_id: contactoId,
+      es_principal: fila.esPrincipal,
+    });
+
+    if (error) throw error;
   }
+
+  if (filasServicio.length > 0) {
+    const { error } = await supabase.from("negocio_servicios").insert(
+      filasServicio.map((fila) => ({ ...fila, negocio_id: negocioId })),
+    );
+
+    if (error) throw error;
+  }
+}
+
+export async function createNegocio(formData: FormData) {
+  const supabase = await createClient();
+  const { data: negocio, error } = await supabase
+    .from("negocios")
+    .insert(negocioFieldsFromForm(formData))
+    .select("id")
+    .single();
+
+  if (error || !negocio) {
+    redirect(
+      `/clientes/nuevo?error=${encodeURIComponent(error?.message ?? "No se pudo crear el negocio")}`,
+    );
+  }
+
+  await sincronizarContactosYServicios(supabase, negocio.id, formData);
 
   revalidatePath("/", "layout");
   redirect("/clientes");
 }
 
-export async function updateCliente(id: string, formData: FormData) {
+export async function updateNegocio(id: string, formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase
-    .from("clientes")
-    .update(clienteFieldsFromForm(formData))
+    .from("negocios")
+    .update(negocioFieldsFromForm(formData))
     .eq("id", id);
 
   if (error) {
     redirect(`/clientes/${id}?error=${encodeURIComponent(error.message)}`);
   }
 
+  await sincronizarContactosYServicios(supabase, id, formData);
+
   revalidatePath("/", "layout");
   redirect("/clientes");
 }
 
-export async function deleteCliente(id: string) {
+export async function deleteNegocio(id: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from("clientes").delete().eq("id", id);
+  const { error } = await supabase.from("negocios").delete().eq("id", id);
 
   if (error) throw error;
 

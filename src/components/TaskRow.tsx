@@ -23,7 +23,7 @@ export function TaskRow({ tarea }: { tarea: TareaConCliente }) {
           {tarea.nombre}
         </Link>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-          {tarea.clientes?.nombre && <span>{tarea.clientes.nombre}</span>}
+          {tarea.negocios?.nombre && <span>{tarea.negocios.nombre}</span>}
           {tarea.subtipo && (
             <>
               <span aria-hidden>·</span>

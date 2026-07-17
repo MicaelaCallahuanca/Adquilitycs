@@ -54,10 +54,10 @@ export default async function ConocimientoPage() {
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
                 {item.tipo && <span>{item.tipo}</span>}
-                {item.clientes?.nombre && (
+                {item.negocios?.nombre && (
                   <>
                     <span aria-hidden>·</span>
-                    <span>{item.clientes.nombre}</span>
+                    <span>{item.negocios.nombre}</span>
                   </>
                 )}
                 {item.servicio && (

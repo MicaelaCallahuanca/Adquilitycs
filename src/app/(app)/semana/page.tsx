@@ -86,7 +86,7 @@ export default async function VistaSemanaPage() {
                   </p>
                   <div className="mt-1 flex items-center justify-between gap-2">
                     <span className="truncate text-xs text-muted">
-                      {tarea.clientes?.nombre ?? "Interna"}
+                      {tarea.negocios?.nombre ?? "Interna"}
                     </span>
                     {tarea.impacto === "Alto" && (
                       <span className="shrink-0 rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent">

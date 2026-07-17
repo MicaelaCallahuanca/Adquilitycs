@@ -3,7 +3,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export type ConocimientoConCliente =
   Database["public"]["Tables"]["conocimiento"]["Row"] & {
-    clientes: { nombre: string } | null;
+    negocios: { nombre: string } | null;
   };
 
 export async function getConocimientoLista(
@@ -11,7 +11,7 @@ export async function getConocimientoLista(
 ) {
   const { data, error } = await supabase
     .from("conocimiento")
-    .select("*, clientes ( nombre )")
+    .select("*, negocios ( nombre )")
     .order("ultima_actualizacion", { ascending: false });
 
   if (error) throw error;

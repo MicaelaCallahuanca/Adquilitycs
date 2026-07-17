@@ -14,54 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      clientes: {
-        Row: {
-          contacto_principal: string | null
-          created_at: string
-          estado: Database["public"]["Enums"]["cliente_estado"]
-          fecha_inicio: string | null
-          fee_mensual: number | null
-          horas_contratadas_mes: number | null
-          id: string
-          nivel_riesgo: Database["public"]["Enums"]["nivel_riesgo"]
-          nombre: string
-          proxima_fecha_clave: string | null
-          servicios_activos: string[]
-          tipo: Database["public"]["Enums"]["cliente_tipo"] | null
-          updated_at: string
-        }
-        Insert: {
-          contacto_principal?: string | null
-          created_at?: string
-          estado?: Database["public"]["Enums"]["cliente_estado"]
-          fecha_inicio?: string | null
-          fee_mensual?: number | null
-          horas_contratadas_mes?: number | null
-          id?: string
-          nivel_riesgo?: Database["public"]["Enums"]["nivel_riesgo"]
-          nombre: string
-          proxima_fecha_clave?: string | null
-          servicios_activos?: string[]
-          tipo?: Database["public"]["Enums"]["cliente_tipo"] | null
-          updated_at?: string
-        }
-        Update: {
-          contacto_principal?: string | null
-          created_at?: string
-          estado?: Database["public"]["Enums"]["cliente_estado"]
-          fecha_inicio?: string | null
-          fee_mensual?: number | null
-          horas_contratadas_mes?: number | null
-          id?: string
-          nivel_riesgo?: Database["public"]["Enums"]["nivel_riesgo"]
-          nombre?: string
-          proxima_fecha_clave?: string | null
-          servicios_activos?: string[]
-          tipo?: Database["public"]["Enums"]["cliente_tipo"] | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       configuracion: {
         Row: {
           capacidad_semanal_horas: number
@@ -122,17 +74,171 @@ export type Database = {
             foreignKeyName: "conocimiento_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "clientes"
+            referencedRelation: "negocios"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "conocimiento_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "v_clientes_metricas"
+            referencedRelation: "v_negocios_metricas"
             referencedColumns: ["id"]
           },
         ]
+      }
+      contactos: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          nombre: string
+          rol: string | null
+          telefono: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          nombre: string
+          rol?: string | null
+          telefono?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          nombre?: string
+          rol?: string | null
+          telefono?: string | null
+        }
+        Relationships: []
+      }
+      negocio_contactos: {
+        Row: {
+          contacto_id: string
+          es_principal: boolean
+          negocio_id: string
+        }
+        Insert: {
+          contacto_id: string
+          es_principal?: boolean
+          negocio_id: string
+        }
+        Update: {
+          contacto_id?: string
+          es_principal?: boolean
+          negocio_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_contactos_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negocio_contactos_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negocio_contactos_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "v_negocios_metricas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocio_servicios: {
+        Row: {
+          created_at: string
+          fecha_inicio: string | null
+          fee_mensual: number | null
+          horas_contratadas_mes: number | null
+          id: string
+          negocio_id: string
+          servicio: string
+        }
+        Insert: {
+          created_at?: string
+          fecha_inicio?: string | null
+          fee_mensual?: number | null
+          horas_contratadas_mes?: number | null
+          id?: string
+          negocio_id: string
+          servicio: string
+        }
+        Update: {
+          created_at?: string
+          fecha_inicio?: string | null
+          fee_mensual?: number | null
+          horas_contratadas_mes?: number | null
+          id?: string
+          negocio_id?: string
+          servicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_servicios_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negocio_servicios_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "v_negocios_metricas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocios: {
+        Row: {
+          created_at: string
+          estado: Database["public"]["Enums"]["cliente_estado"]
+          fecha_inicio: string | null
+          fee_mensual: number | null
+          horas_contratadas_mes: number | null
+          id: string
+          nivel_riesgo: Database["public"]["Enums"]["nivel_riesgo"]
+          nombre: string
+          proxima_fecha_clave: string | null
+          tipo: Database["public"]["Enums"]["cliente_tipo"] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: Database["public"]["Enums"]["cliente_estado"]
+          fecha_inicio?: string | null
+          fee_mensual?: number | null
+          horas_contratadas_mes?: number | null
+          id?: string
+          nivel_riesgo?: Database["public"]["Enums"]["nivel_riesgo"]
+          nombre: string
+          proxima_fecha_clave?: string | null
+          tipo?: Database["public"]["Enums"]["cliente_tipo"] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: Database["public"]["Enums"]["cliente_estado"]
+          fecha_inicio?: string | null
+          fee_mensual?: number | null
+          horas_contratadas_mes?: number | null
+          id?: string
+          nivel_riesgo?: Database["public"]["Enums"]["nivel_riesgo"]
+          nombre?: string
+          proxima_fecha_clave?: string | null
+          tipo?: Database["public"]["Enums"]["cliente_tipo"] | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       semanas: {
         Row: {
@@ -294,14 +400,14 @@ export type Database = {
             foreignKeyName: "tareas_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "clientes"
+            referencedRelation: "negocios"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tareas_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "v_clientes_metricas"
+            referencedRelation: "v_negocios_metricas"
             referencedColumns: ["id"]
           },
           {
@@ -336,10 +442,9 @@ export type Database = {
       }
     }
     Views: {
-      v_clientes_metricas: {
+      v_negocios_metricas: {
         Row: {
           alerta_capacidad: string | null
-          contacto_principal: string | null
           created_at: string | null
           estado: Database["public"]["Enums"]["cliente_estado"] | null
           fecha_inicio: string | null

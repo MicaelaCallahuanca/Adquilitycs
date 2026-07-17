@@ -6,7 +6,7 @@ import {
   getTareasEsperandoClienteLargo,
   getTareasSemanaKanban,
 } from "@/lib/data/tareas";
-import { getClientesEnRiesgoCount } from "@/lib/data/clientes";
+import { getNegociosEnRiesgoCount } from "@/lib/data/negocios";
 import { getOrCrearSemanaActual } from "@/lib/data/semanas";
 import { TaskRow } from "@/components/TaskRow";
 import { StatTile } from "@/components/StatTile";
@@ -20,7 +20,7 @@ export default async function HomePage() {
       getTareasHoy(supabase),
       getTareasVenciendo48h(supabase),
       getTareasEsperandoClienteLargo(supabase),
-      getClientesEnRiesgoCount(supabase),
+      getNegociosEnRiesgoCount(supabase),
       getOrCrearSemanaActual(supabase),
       getTareasSemanaKanban(supabase),
     ]);

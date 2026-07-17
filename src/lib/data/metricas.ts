@@ -24,7 +24,7 @@ export async function getRentabilidadClientes(
   supabase: SupabaseClient<Database>,
 ) {
   const { data, error } = await supabase
-    .from("v_clientes_metricas")
+    .from("v_negocios_metricas")
     .select("id, nombre, rentabilidad, horas_consumidas_mes")
     .not("rentabilidad", "is", null)
     .order("rentabilidad", { ascending: true });

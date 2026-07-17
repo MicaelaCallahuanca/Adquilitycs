@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getClienteById } from "@/lib/data/clientes";
-import { updateCliente, deleteCliente } from "@/app/actions";
+import { getNegocioById } from "@/lib/data/negocios";
+import { getContactosParaSelect } from "@/lib/data/contactos";
+import { updateNegocio, deleteNegocio } from "@/app/actions";
 import { ConfirmButton } from "@/components/ConfirmButton";
+import { ContactosEditor, type ContactoFila } from "@/components/ContactosEditor";
+import { ServiciosEditor, type ServicioFila } from "@/components/ServiciosEditor";
 
 const TIPOS = ["Empresa fija", "Freelance", "Nuevo"];
 const ESTADOS = ["Activo", "Onboarding", "En pausa", "Cerrado"];
 const RIESGOS = ["Bajo", "Medio", "Alto"];
-const SERVICIOS = ["SEO", "Ads", "Tracking", "CRO", "Automatizaciones", "IA"];
 
 export default async function EditarClientePage({
   params,
@@ -19,20 +21,48 @@ export default async function EditarClientePage({
   const { id } = await params;
   const { error } = await searchParams;
   const supabase = await createClient();
-  const cliente = await getClienteById(supabase, id);
+  const [negocio, contactosExistentes] = await Promise.all([
+    getNegocioById(supabase, id),
+    getContactosParaSelect(supabase),
+  ]);
 
-  if (!cliente) notFound();
+  if (!negocio) notFound();
 
-  const updateClienteConId = updateCliente.bind(null, id);
-  const deleteClienteConId = deleteCliente.bind(null, id);
+  const updateNegocioConId = updateNegocio.bind(null, id);
+  const deleteNegocioConId = deleteNegocio.bind(null, id);
+
+  const contactosIniciales: ContactoFila[] = negocio.negocio_contactos
+    .filter((nc) => nc.contactos)
+    .map((nc, i) => ({
+      key: `contacto-${i}`,
+      contactoId: nc.contactos!.id,
+      nombre: nc.contactos!.nombre,
+      email: nc.contactos!.email ?? "",
+      telefono: nc.contactos!.telefono ?? "",
+      rol: nc.contactos!.rol ?? "",
+    }));
+  const principalIndex = negocio.negocio_contactos.findIndex(
+    (nc) => nc.es_principal,
+  );
+
+  const serviciosIniciales: ServicioFila[] = negocio.negocio_servicios.map(
+    (s, i) => ({
+      key: `servicio-${i}`,
+      servicio: s.servicio,
+      fechaInicio: s.fecha_inicio ?? "",
+      feeMensual: s.fee_mensual !== null ? String(s.fee_mensual) : "",
+      horasContratadasMes:
+        s.horas_contratadas_mes !== null ? String(s.horas_contratadas_mes) : "",
+    }),
+  );
 
   return (
     <div className="mx-auto max-w-xl">
       <h1 className="text-lg font-semibold text-foreground">
-        Editar cliente
+        Editar negocio
       </h1>
 
-      <form action={updateClienteConId} className="mt-6 flex flex-col gap-4">
+      <form action={updateNegocioConId} className="mt-6 flex flex-col gap-4">
         <div>
           <label htmlFor="nombre" className="mb-1 block text-xs text-muted">
             Nombre
@@ -43,7 +73,7 @@ export default async function EditarClientePage({
             type="text"
             required
             autoFocus
-            defaultValue={cliente.nombre}
+            defaultValue={negocio.nombre}
             className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
         </div>
@@ -56,7 +86,7 @@ export default async function EditarClientePage({
             <select
               id="tipo"
               name="tipo"
-              defaultValue={cliente.tipo ?? ""}
+              defaultValue={negocio.tipo ?? ""}
               className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
             >
               <option value="">—</option>
@@ -74,7 +104,7 @@ export default async function EditarClientePage({
             <select
               id="estado"
               name="estado"
-              defaultValue={cliente.estado}
+              defaultValue={negocio.estado}
               className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
             >
               {ESTADOS.map((e) => (
@@ -86,77 +116,19 @@ export default async function EditarClientePage({
           </div>
         </div>
 
-        <div>
-          <p className="mb-1 block text-xs text-muted">Servicios activos</p>
-          <div className="flex flex-wrap gap-3">
-            {SERVICIOS.map((s) => (
-              <label
-                key={s}
-                className="flex items-center gap-1.5 text-sm text-foreground"
-              >
-                <input
-                  type="checkbox"
-                  name="servicios_activos"
-                  value={s}
-                  defaultChecked={cliente.servicios_activos.includes(s)}
-                  className="accent-accent"
-                />
-                {s}
-              </label>
-            ))}
-          </div>
-        </div>
-
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label
-              htmlFor="horas_contratadas_mes"
+              htmlFor="fecha_inicio"
               className="mb-1 block text-xs text-muted"
             >
-              Horas contratadas/mes
+              Fecha de inicio de la relación
             </label>
             <input
-              id="horas_contratadas_mes"
-              name="horas_contratadas_mes"
-              type="number"
-              min="0"
-              step="0.5"
-              defaultValue={cliente.horas_contratadas_mes ?? ""}
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="fee_mensual"
-              className="mb-1 block text-xs text-muted"
-            >
-              Fee mensual
-            </label>
-            <input
-              id="fee_mensual"
-              name="fee_mensual"
-              type="number"
-              min="0"
-              step="0.01"
-              defaultValue={cliente.fee_mensual ?? ""}
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label
-              htmlFor="contacto_principal"
-              className="mb-1 block text-xs text-muted"
-            >
-              Contacto principal
-            </label>
-            <input
-              id="contacto_principal"
-              name="contacto_principal"
-              type="text"
-              defaultValue={cliente.contacto_principal ?? ""}
+              id="fecha_inicio"
+              name="fecha_inicio"
+              type="date"
+              defaultValue={negocio.fecha_inicio ?? ""}
               className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
             />
           </div>
@@ -170,7 +142,7 @@ export default async function EditarClientePage({
             <select
               id="nivel_riesgo"
               name="nivel_riesgo"
-              defaultValue={cliente.nivel_riesgo}
+              defaultValue={negocio.nivel_riesgo}
               className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
             >
               {RIESGOS.map((r) => (
@@ -182,6 +154,30 @@ export default async function EditarClientePage({
           </div>
         </div>
 
+        <div>
+          <label
+            htmlFor="proxima_fecha_clave"
+            className="mb-1 block text-xs text-muted"
+          >
+            Próxima fecha clave
+          </label>
+          <input
+            id="proxima_fecha_clave"
+            name="proxima_fecha_clave"
+            type="date"
+            defaultValue={negocio.proxima_fecha_clave ?? ""}
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+          />
+        </div>
+
+        <ContactosEditor
+          existentes={contactosExistentes}
+          initial={contactosIniciales}
+          initialPrincipalIndex={principalIndex >= 0 ? principalIndex : 0}
+        />
+
+        <ServiciosEditor initial={serviciosIniciales} />
+
         {error && <p className="text-xs text-danger">{error}</p>}
 
         <button
@@ -192,12 +188,12 @@ export default async function EditarClientePage({
         </button>
       </form>
 
-      <form action={deleteClienteConId} className="mt-4">
+      <form action={deleteNegocioConId} className="mt-4">
         <ConfirmButton
-          confirmText={`¿Eliminar "${cliente.nombre}"? Sus tareas quedan sin cliente asignado. Esta acción no se puede deshacer.`}
+          confirmText={`¿Eliminar "${negocio.nombre}"? Sus tareas quedan sin negocio asignado. Esta acción no se puede deshacer.`}
           className="text-xs text-danger hover:opacity-80"
         >
-          Eliminar cliente
+          Eliminar negocio
         </ConfirmButton>
       </form>
     </div>

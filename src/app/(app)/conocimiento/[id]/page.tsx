@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getConocimientoById } from "@/lib/data/conocimiento";
-import { getClientesParaSelect } from "@/lib/data/clientes";
+import { getNegociosParaSelect } from "@/lib/data/negocios";
 import { updateConocimiento, deleteConocimiento } from "@/app/actions";
 import { ConfirmButton } from "@/components/ConfirmButton";
 
@@ -21,7 +21,7 @@ export default async function EditarConocimientoPage({
 
   const [item, clientes] = await Promise.all([
     getConocimientoById(supabase, id),
-    getClientesParaSelect(supabase),
+    getNegociosParaSelect(supabase),
   ]);
 
   if (!item) notFound();

@@ -3,10 +3,10 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export type TareaConCliente =
   Database["public"]["Tables"]["tareas"]["Row"] & {
-    clientes: { nombre: string } | null;
+    negocios: { nombre: string } | null;
   };
 
-const TAREA_CON_CLIENTE_SELECT = "*, clientes ( nombre )";
+const TAREA_CON_CLIENTE_SELECT = "*, negocios ( nombre )";
 
 export async function getTareaById(
   supabase: SupabaseClient<Database>,

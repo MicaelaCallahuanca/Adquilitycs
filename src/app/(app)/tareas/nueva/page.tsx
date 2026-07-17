@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getClientesParaSelect } from "@/lib/data/clientes";
+import { getNegociosParaSelect } from "@/lib/data/negocios";
 import { getSopsParaSelect } from "@/lib/data/sops";
 import { createTarea } from "@/app/actions";
 import { EsfuerzoField } from "@/components/EsfuerzoField";
@@ -16,7 +16,7 @@ export default async function NuevaTareaPage({
   const { error } = await searchParams;
   const supabase = await createClient();
   const [clientes, sops] = await Promise.all([
-    getClientesParaSelect(supabase),
+    getNegociosParaSelect(supabase),
     getSopsParaSelect(supabase),
   ]);
 

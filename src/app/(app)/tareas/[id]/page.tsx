@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getTareaById } from "@/lib/data/tareas";
-import { getClientesParaSelect } from "@/lib/data/clientes";
+import { getNegociosParaSelect } from "@/lib/data/negocios";
 import { getSopsParaSelect } from "@/lib/data/sops";
 import { updateTarea, deleteTarea } from "@/app/actions";
 import { EsfuerzoField } from "@/components/EsfuerzoField";
@@ -24,7 +24,7 @@ export default async function EditarTareaPage({
 
   const [tarea, clientes, sops] = await Promise.all([
     getTareaById(supabase, id),
-    getClientesParaSelect(supabase),
+    getNegociosParaSelect(supabase),
     getSopsParaSelect(supabase),
   ]);
 
