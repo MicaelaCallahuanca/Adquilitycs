@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
+import { getConfiguracion } from "@/lib/data/configuracion";
 
 function toISODate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -33,21 +34,27 @@ export async function getSemanaActual(supabase: SupabaseClient<Database>) {
   return data;
 }
 
-// Crea la fila de la semana actual si todavía no existe (capacidad por
-// defecto 41.5h, sección 9) — cero fricción: el Dashboard siempre tiene una
-// semana activa sobre la que calcular capacidad, sin que haya que crearla a mano.
+// Crea la fila de la semana actual si todavía no existe, usando la capacidad
+// por defecto de Configuración (sección 9) — cero fricción: el Dashboard
+// siempre tiene una semana activa sobre la que calcular capacidad, sin que
+// haya que crearla a mano.
 export async function getOrCrearSemanaActual(supabase: SupabaseClient<Database>) {
   const existente = await getSemanaActual(supabase);
   if (existente) return existente;
 
   const { inicio, fin } = getRangoSemana();
+  const configuracion = await getConfiguracion(supabase);
 
   // upsert + ignoreDuplicates: si dos requests concurrentes llegan a crear
   // la misma semana, la segunda no rompe por el unique de semana_inicio.
   const { error } = await supabase
     .from("semanas")
     .upsert(
-      { semana_inicio: inicio, semana_fin: fin },
+      {
+        semana_inicio: inicio,
+        semana_fin: fin,
+        capacidad_disponible_h: configuracion.capacidad_semanal_horas,
+      },
       { onConflict: "semana_inicio", ignoreDuplicates: true },
     );
 

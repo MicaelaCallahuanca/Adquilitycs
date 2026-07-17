@@ -7,6 +7,7 @@ import { getOrCrearSemanaActual } from "@/lib/data/semanas";
 import type { Database } from "@/lib/supabase/database.types";
 
 type TareaEstado = Database["public"]["Enums"]["tarea_estado"];
+type TareaBacklogBucket = Database["public"]["Enums"]["tarea_backlog_bucket"];
 
 // Estados que anclan la tarea a la semana en curso (sección 2.1: "Semana
 // ancla la tarea a una semana calendario"). Backlog queda fuera a propósito:
@@ -71,6 +72,9 @@ function tareaFieldsFromForm(formData: FormData) {
     deadline_real: optionalString(formData, "deadline_real"),
     notas: optionalString(formData, "notas"),
     sop_id: optionalString(formData, "sop_id"),
+    backlog_bucket:
+      (optionalString(formData, "backlog_bucket") as TareaBacklogBucket | null) ??
+      "General",
   };
 }
 
@@ -136,6 +140,21 @@ export async function updateTareaEstado(id: string, estado: TareaEstado) {
   }
 
   const { error } = await supabase.from("tareas").update(updates).eq("id", id);
+
+  if (error) throw error;
+
+  revalidatePath("/", "layout");
+}
+
+export async function updateTareaBacklogBucket(
+  id: string,
+  bucket: TareaBacklogBucket,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tareas")
+    .update({ backlog_bucket: bucket })
+    .eq("id", id);
 
   if (error) throw error;
 
@@ -268,4 +287,82 @@ export async function createSop(formData: FormData) {
 
   revalidatePath("/", "layout");
   redirect("/sops");
+}
+
+export async function updateConfiguracion(formData: FormData) {
+  const supabase = await createClient();
+  const capacidad = optionalNumber(formData, "capacidad_semanal_horas");
+
+  const { error } = await supabase
+    .from("configuracion")
+    .update({ capacidad_semanal_horas: capacidad ?? 41.5 })
+    .eq("id", true);
+
+  if (error) {
+    redirect(`/configuracion?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/configuracion");
+}
+
+function conocimientoFieldsFromForm(formData: FormData) {
+  return {
+    nombre: String(formData.get("nombre") ?? ""),
+    tipo: optionalString(
+      formData,
+      "tipo",
+    ) as Database["public"]["Enums"]["conocimiento_tipo"] | null,
+    cliente_id: optionalString(formData, "cliente_id"),
+    servicio: optionalString(formData, "servicio"),
+    contenido: optionalString(formData, "contenido"),
+    confianza:
+      (optionalString(
+        formData,
+        "confianza",
+      ) as Database["public"]["Enums"]["conocimiento_confianza"] | null) ??
+      "Borrador",
+  };
+}
+
+export async function createConocimiento(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conocimiento")
+    .insert(conocimientoFieldsFromForm(formData));
+
+  if (error) {
+    redirect(`/conocimiento/nuevo?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/conocimiento");
+}
+
+export async function updateConocimiento(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conocimiento")
+    .update({
+      ...conocimientoFieldsFromForm(formData),
+      ultima_actualizacion: new Date().toISOString().slice(0, 10),
+    })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/conocimiento/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/conocimiento");
+}
+
+export async function deleteConocimiento(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("conocimiento").delete().eq("id", id);
+
+  if (error) throw error;
+
+  revalidatePath("/", "layout");
+  redirect("/conocimiento");
 }

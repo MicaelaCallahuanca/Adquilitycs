@@ -62,6 +62,78 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracion: {
+        Row: {
+          capacidad_semanal_horas: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          capacidad_semanal_horas?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          capacidad_semanal_horas?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      conocimiento: {
+        Row: {
+          cliente_id: string | null
+          confianza: Database["public"]["Enums"]["conocimiento_confianza"]
+          contenido: string | null
+          created_at: string
+          id: string
+          nombre: string
+          servicio: string | null
+          tipo: Database["public"]["Enums"]["conocimiento_tipo"] | null
+          ultima_actualizacion: string
+          updated_at: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          confianza?: Database["public"]["Enums"]["conocimiento_confianza"]
+          contenido?: string | null
+          created_at?: string
+          id?: string
+          nombre: string
+          servicio?: string | null
+          tipo?: Database["public"]["Enums"]["conocimiento_tipo"] | null
+          ultima_actualizacion?: string
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string | null
+          confianza?: Database["public"]["Enums"]["conocimiento_confianza"]
+          contenido?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string
+          servicio?: string | null
+          tipo?: Database["public"]["Enums"]["conocimiento_tipo"] | null
+          ultima_actualizacion?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conocimiento_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conocimiento_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_clientes_metricas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       semanas: {
         Row: {
           capacidad_disponible_h: number
@@ -136,6 +208,7 @@ export type Database = {
       }
       tareas: {
         Row: {
+          backlog_bucket: Database["public"]["Enums"]["tarea_backlog_bucket"]
           bloqueada_por: string | null
           categoria: Database["public"]["Enums"]["tarea_categoria"] | null
           cliente_id: string | null
@@ -160,6 +233,7 @@ export type Database = {
           urgencia: Database["public"]["Enums"]["tarea_urgencia"] | null
         }
         Insert: {
+          backlog_bucket?: Database["public"]["Enums"]["tarea_backlog_bucket"]
           bloqueada_por?: string | null
           categoria?: Database["public"]["Enums"]["tarea_categoria"] | null
           cliente_id?: string | null
@@ -184,6 +258,7 @@ export type Database = {
           urgencia?: Database["public"]["Enums"]["tarea_urgencia"] | null
         }
         Update: {
+          backlog_bucket?: Database["public"]["Enums"]["tarea_backlog_bucket"]
           bloqueada_por?: string | null
           categoria?: Database["public"]["Enums"]["tarea_categoria"] | null
           cliente_id?: string | null
@@ -320,6 +395,8 @@ export type Database = {
     Enums: {
       cliente_estado: "Activo" | "Onboarding" | "En pausa" | "Cerrado"
       cliente_tipo: "Empresa fija" | "Freelance" | "Nuevo"
+      conocimiento_confianza: "Verificado" | "Inferido" | "Borrador"
+      conocimiento_tipo: "Técnico" | "Cliente" | "Estratégico"
       nivel_riesgo: "Bajo" | "Medio" | "Alto"
       sop_estado: "Vigente" | "Necesita revisión" | "Obsoleto"
       sop_servicio:
@@ -333,6 +410,11 @@ export type Database = {
         | "Facturación"
         | "QA"
       sop_tipo: "Proceso" | "Checklist" | "Plantilla"
+      tarea_backlog_bucket:
+        | "General"
+        | "Próxima semana"
+        | "En espera"
+        | "Algún día"
       tarea_categoria: "Producción" | "Comercial" | "Gestión" | "Formación"
       tarea_estado:
         | "Backlog"
@@ -473,6 +555,8 @@ export const Constants = {
     Enums: {
       cliente_estado: ["Activo", "Onboarding", "En pausa", "Cerrado"],
       cliente_tipo: ["Empresa fija", "Freelance", "Nuevo"],
+      conocimiento_confianza: ["Verificado", "Inferido", "Borrador"],
+      conocimiento_tipo: ["Técnico", "Cliente", "Estratégico"],
       nivel_riesgo: ["Bajo", "Medio", "Alto"],
       sop_estado: ["Vigente", "Necesita revisión", "Obsoleto"],
       sop_servicio: [
@@ -487,6 +571,12 @@ export const Constants = {
         "QA",
       ],
       sop_tipo: ["Proceso", "Checklist", "Plantilla"],
+      tarea_backlog_bucket: [
+        "General",
+        "Próxima semana",
+        "En espera",
+        "Algún día",
+      ],
       tarea_categoria: ["Producción", "Comercial", "Gestión", "Formación"],
       tarea_estado: [
         "Backlog",
